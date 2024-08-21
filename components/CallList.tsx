@@ -8,10 +8,12 @@ import React from "react";
 import MeetingCard from "./MettingCard";
 import Loader from "@/components/Loader";
 import { toast } from "@/components/ui/use-toast";
+import { deleteCall } from "@/actions/stream.actions";
 
 function CallList({ type }: { type: "upcoming" | "ended" | "recordings" }) {
   const [recordings, setRecordings] = useState<CallRecording[]>([]);
-  const { endedCalls, upcomingCalls, callRecordings, isLoading } =
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const { endedCalls, upcomingCalls, callRecordings, isLoading, refetchCalls } =
     useGetCalls();
   const router = useRouter();
 
@@ -63,10 +65,31 @@ function CallList({ type }: { type: "upcoming" | "ended" | "recordings" }) {
         });
       }
     };
+    if (type === "recordings") {
+      fetchRecordings();
+    }
   }, [type, callRecordings]);
 
   const calls = getCalls();
   const noCallsMessage = getNoCallsMessage();
+
+  const handleDelete = async (callId: string) => {
+    try {
+      const res = await deleteCall(callId, "default");
+      if (res.success) {
+        toast({
+          title: res.message,
+        });
+        setRefreshTrigger((prev) => prev + 1);
+        await refetchCalls();
+      }
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Failed to delete call",
+      });
+    }
+  };
 
   if (isLoading) {
     return <Loader />;
@@ -75,6 +98,8 @@ function CallList({ type }: { type: "upcoming" | "ended" | "recordings" }) {
   if (!calls) {
     return <h1 className="text-center text-white">{noCallsMessage}</h1>;
   }
+
+  console.log(calls);
 
   return (
     <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
@@ -97,6 +122,7 @@ function CallList({ type }: { type: "upcoming" | "ended" | "recordings" }) {
               (meeting as Call).state?.startsAt?.toLocaleString() || "No date"
             }
             isPreviousMeeting={type === "ended"}
+            isUpcomingMeeting={type === "upcoming"}
             buttonIcon1={type === "recordings" ? "/icons/play.svg" : ""}
             buttonText={type === "recordings" ? "Play" : "Join"}
             handleClick={
@@ -112,6 +138,7 @@ function CallList({ type }: { type: "upcoming" | "ended" | "recordings" }) {
                     (meeting as Call).id
                   }`
             }
+            handleDelete={() => handleDelete((meeting as Call).id)}
           />
         ))
       ) : (

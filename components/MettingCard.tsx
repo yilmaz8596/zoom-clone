@@ -6,25 +6,37 @@ import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 import { avatarImages } from "@/constants";
 import { useToast } from "@/components/ui/use-toast";
+import delIcon from "@/public/icons/delete.svg";
+import edIcon from "@/public/icons/edit.svg";
 
 interface MeetingCardProps {
   title: string;
   date: string;
   icon: string;
+  editIcon?: string;
+  deleteIcon?: string;
   isPreviousMeeting?: boolean;
+  isUpcomingMeeting?: boolean;
   buttonIcon1?: string;
   buttonText?: string;
   handleClick: () => void;
+  handleEdit?: () => void;
+  handleDelete?: () => void;
   link: string;
 }
 
 const MeetingCard = ({
   icon,
+  editIcon,
+  deleteIcon,
   title,
   date,
   isPreviousMeeting,
+  isUpcomingMeeting,
   buttonIcon1,
   handleClick,
+  handleDelete,
+  handleEdit,
   link,
   buttonText,
 }: MeetingCardProps) => {
@@ -33,7 +45,41 @@ const MeetingCard = ({
   return (
     <section className="flex min-h-[258px] w-full flex-col justify-between rounded-[14px] bg-dark-1 px-5 py-8 xl:max-w-[568px]">
       <article className="flex flex-col gap-5">
-        <Image src={icon} alt="upcoming" width={28} height={28} />
+        <div className="flex justify-between items-center">
+          <Image src={icon} alt="upcoming" width={28} height={28} />
+          <div className="flex gap-2">
+            {isPreviousMeeting && (
+              <Image
+                src={deleteIcon ? deleteIcon : delIcon}
+                alt="delete"
+                width={20}
+                height={20}
+                onClick={handleDelete}
+                className="cursor-pointer"
+              />
+            )}
+            {isUpcomingMeeting && (
+              <>
+                <Image
+                  src={editIcon ? editIcon : edIcon}
+                  alt="edit"
+                  width={20}
+                  height={20}
+                  onClick={handleEdit}
+                  className="cursor-pointer"
+                />
+                <Image
+                  src={deleteIcon ? deleteIcon : delIcon}
+                  alt="delete"
+                  width={20}
+                  height={20}
+                  onClick={handleDelete}
+                  className="cursor-pointer"
+                />
+              </>
+            )}
+          </div>
+        </div>
         <div className="flex justify-between">
           <div className="flex flex-col gap-2">
             <h1 className="text-2xl font-bold">{title}</h1>

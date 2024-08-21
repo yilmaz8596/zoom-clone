@@ -28,3 +28,21 @@ export const tokenProvider = async () => {
 
   return token;
 };
+
+export const deleteCall = async (callId: string, callType: string) => {
+  if (!apiKey || !apiSecret) {
+    throw new Error("Stream API Key or Secret Key is not set");
+  }
+
+  try {
+    const client = new StreamClient(apiKey, apiSecret);
+    const call = client.video.call(callType, callId);
+
+    await call.delete({ hard: true });
+
+    return { success: true, message: `Call ${callId} deleted successfully` };
+  } catch (error) {
+    console.error("Error deleting call:", error);
+    throw new Error(`Failed to delete call: ${(error as Error).message}`);
+  }
+};
